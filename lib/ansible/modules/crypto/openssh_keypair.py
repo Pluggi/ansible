@@ -48,6 +48,13 @@ options:
         type: str
         default: rsa
         choices: ['rsa', 'dsa', 'rsa1', 'ecdsa', 'ed25519']
+    format:
+        description:
+            - Specifies a format when generating a key.
+        type: str
+        default: rfc4716
+        choices: ['rfc4716', 'pkcs8', 'pem']
+        version_added: "2.10"
     force:
         description:
             - Should the key be regenerated even if it already exists
@@ -141,6 +148,7 @@ class Keypair(object):
         self.force = module.params['force']
         self.size = module.params['size']
         self.type = module.params['type']
+        self.format = module.params['format']
         self.comment = module.params['comment']
         self.changed = False
         self.check_mode = module.check_mode
@@ -178,6 +186,7 @@ class Keypair(object):
                 '-N', '',
                 '-b', str(self.size),
                 '-t', self.type,
+                '-m', self.format,
                 '-f', self.path,
             ]
 
@@ -326,6 +335,7 @@ class Keypair(object):
             'changed': self.changed,
             'size': self.size,
             'type': self.type,
+            'format': self.format,
             'filename': self.path,
             # On removal this has no value
             'fingerprint': self.fingerprint[1] if self.fingerprint else '',
@@ -366,6 +376,7 @@ def main():
             state=dict(type='str', default='present', choices=['present', 'absent']),
             size=dict(type='int'),
             type=dict(type='str', default='rsa', choices=['rsa', 'dsa', 'rsa1', 'ecdsa', 'ed25519']),
+            format=dict(type='str', default='rfc4716', choices=['rfc4716', 'pkcs8', 'pem']),
             force=dict(type='bool', default=False),
             path=dict(type='path', required=True),
             comment=dict(type='str'),
